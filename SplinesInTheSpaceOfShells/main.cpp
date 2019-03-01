@@ -48,32 +48,6 @@ void getDihEdgeArea()
 		calcu->calculateFacesFrame();
 		calcu->computeDiEdge();
 
-		/*DihAngel1[i].resize(nE_);
-		EdgeLen1[i].resize(nF_);
-		FaceAreas1[i].resize(nV_);*/
-
-		//存面积到data/FacesAreas文件夹
-		/*calcu->calculateFacesAreas();
-		char *FaceAreasPath = new char[100];
-		sprintf_s(FaceAreasPath, 100, "data\\FaceAreas\\body_%d.txt", i);
-		fstream opFA(FaceAreasPath, ios::out);
-		for (int j = 0; j < calcu->nF; j++)
-		{
-			opFA << calcu->FaceAreas[j][i] << endl;
-			FaceAreas1[i][j] = calcu->FaceAreas[j][i];
-		}
-		opFA.close();*/
-
-		//存二面角到data/DihedralAngle文件夹			
-		/*char *DihAngleDataPath = new char[100];
-		sprintf_s(DihAngleDataPath, 100, "data\\DihedralAngle\\body_%d.txt", i);
-		fstream opDA(DihAngleDataPath, ios::out);*/
-		
-		//存边长到data/EdgeLength文件夹	
-		/*char *EdgeLengthDataPath = new char[100];
-		sprintf_s(EdgeLengthDataPath, 100, "data\\EdgeLength\\body_%d.txt", i);
-		fstream opEL(EdgeLengthDataPath, ios::out);*/
-
 		//存二面角和边长到data/DihEdg文件夹
 		char *DihEdgDataPath = new char[100];
 		sprintf_s(DihEdgDataPath, 100, "data\\DihEdg\\body_DihEdg.txt");
@@ -82,9 +56,35 @@ void getDihEdgeArea()
 		opDE << DihEdg1 << endl;
 		opDE.close();
 
-		/*char *DihEdgDataPath = new char[100];
-		sprintf_s(DihEdgDataPath, 100, "data\\DihEdg\\body_%d.txt",i);
-		fstream opDE(DihEdgDataPath, ios::out);*/
+		//DihAngel1[i].resize(nE_);
+		//EdgeLen1[i].resize(nF_);
+		//FaceAreas1[i].resize(nV_);
+
+		////存面积到data/FacesAreas文件夹
+		//calcu->calculateFacesAreas();
+		//char *FaceAreasPath = new char[100];
+		//sprintf_s(FaceAreasPath, 100, "data\\FaceAreas\\body_%d.txt", i);
+		//fstream opFA(FaceAreasPath, ios::out);
+		//for (int j = 0; j < calcu->nF; j++)
+		//{
+		//	opFA << calcu->FaceAreas[j][i] << endl;
+		//	FaceAreas1[i][j] = calcu->FaceAreas[j][i];
+		//}
+		//opFA.close();
+
+		////存二面角到data/DihedralAngle文件夹			
+		//char *DihAngleDataPath = new char[100];
+		//sprintf_s(DihAngleDataPath, 100, "data\\DihedralAngle\\body_%d.txt", i);
+		//fstream opDA(DihAngleDataPath, ios::out);
+		//
+		////存边长到data/EdgeLength文件夹	
+		//char *EdgeLengthDataPath = new char[100];
+		//sprintf_s(EdgeLengthDataPath, 100, "data\\EdgeLength\\body_%d.txt", i);
+		//fstream opEL(EdgeLengthDataPath, ios::out);
+
+		//char *DihEdgDataPath = new char[100];
+		//sprintf_s(DihEdgDataPath, 100, "data\\DihEdg\\body_%d.txt",i);
+		//fstream opDE(DihEdgDataPath, ios::out);
 
 		//int temp = 2 * (nE_);
 		//for (int j = 0/*,k=0*/; j<temp/*,k<nE_*/; j++/*,k++*/)
