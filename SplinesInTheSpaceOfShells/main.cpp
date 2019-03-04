@@ -1,9 +1,9 @@
 #pragma once
 #include "global.h"
-//#include "tapkee/tapkee.hpp"
+#include <tapkee/tapkee.hpp>
 
 using namespace std;
-//using namespace tapkee;
+using namespace tapkee;
 
 void getNum_EFV()
 {
@@ -21,20 +21,34 @@ void getNum_EFV()
 
 void getDihEdgeArea()
 {
-	DihAngel1.resize(meshNum);
-	EdgeLen1.resize(meshNum);
-	FaceAreas1.resize(meshNum);
-
-	/*1...DihEdg1 = Eigen::MatrixXd::Zero(nE_, 2);*/
-	/*2...DihEdg1 = Eigen::MatrixXd::Zero(2*nE_, 1);*/
 	DihEdg1 = Eigen::MatrixXd::Zero(2 * nE_, meshNum);
+	Points1 = Eigen::MatrixXd::Zero(3 * nV_, meshNum);
+	Dih1 = Eigen::MatrixXd::Zero(nE_, meshNum);
+	Edg1 = Eigen::MatrixXd::Zero(nE_, meshNum);
+	FaceAreas1 = Eigen::MatrixXd::Zero(nF_, meshNum);
 
 	cout << "load mesh..." << endl;
 	cout << "calculate dihedral angle、edge length and face area..." << endl;
 
+	//定义文件流，存二面角和边长到data/DihEdg文件夹	
 	char *DihEdgDataPath = new char[100];
 	sprintf_s(DihEdgDataPath, 100, "data\\DihEdg\\body_DihEdg.txt");
 	fstream opDE(DihEdgDataPath, ios::out);
+	//定义文件流，存顶点三维坐标到data/Points文件夹	
+	char *PointsPath = new char[100];
+	sprintf_s(PointsPath, 100, "data\\Points\\body_Points.txt");
+	fstream opPoints(PointsPath, ios::out);
+	//定义文件流，分别存二面角和边长到data/DihEdg文件夹	
+	char *DihDataPath = new char[100];
+	sprintf_s(DihDataPath, 100, "data\\DihEdg\\body_Dih.txt");
+	fstream opD(DihDataPath, ios::out);
+	char *EdgDataPath = new char[100];
+	sprintf_s(EdgDataPath, 100, "data\\DihEdg\\body_Edg.txt");
+	fstream opE(EdgDataPath, ios::out);
+	/*//定义文件流，存面积到data/FacesAreas文件夹			
+	char *FaceAreasPath = new char[100];
+	sprintf_s(FaceAreasPath, 100, "data\\FaceAreas\\body_FaceAreas.txt");
+	fstream opFA(FaceAreasPath, ios::out);*/
 
 	for (int i = 0; i < meshNum; i++)
 	{
@@ -48,83 +62,71 @@ void getDihEdgeArea()
 		calcu->calculateFacesFrame();
 		calcu->computeDiEdge();
 
-		//存二面角和边长到data/DihEdg文件夹
-		char *DihEdgDataPath = new char[100];
-		sprintf_s(DihEdgDataPath, 100, "data\\DihEdg\\body_DihEdg.txt");
-		fstream opDE(DihEdgDataPath, ios::out);
+		//存二面角和边长到data/DihEdg文件夹				
 		DihEdg1.col(i) = calcu->DiEdgeDataMatrix.row(i).transpose();
-		opDE << DihEdg1 << endl;
-		opDE.close();
+		//存顶点三维坐标到data/Points文件夹			
+		for (int j = 0,k=0; j <nV_ ,k<3 * nV_; j++)
+		{
+			Points1(k, i) = calcu->SpatialTemData[j][0][0];
+			Points1(k+1, i) = calcu->SpatialTemData[j][0][1];
+			Points1(k+2, i) = calcu->SpatialTemData[j][0][2];
 
-		//DihAngel1[i].resize(nE_);
-		//EdgeLen1[i].resize(nF_);
-		//FaceAreas1[i].resize(nV_);
-
-		////存面积到data/FacesAreas文件夹
-		//calcu->calculateFacesAreas();
-		//char *FaceAreasPath = new char[100];
-		//sprintf_s(FaceAreasPath, 100, "data\\FaceAreas\\body_%d.txt", i);
-		//fstream opFA(FaceAreasPath, ios::out);
-		//for (int j = 0; j < calcu->nF; j++)
-		//{
-		//	opFA << calcu->FaceAreas[j][i] << endl;
-		//	FaceAreas1[i][j] = calcu->FaceAreas[j][i];
-		//}
-		//opFA.close();
-
-		////存二面角到data/DihedralAngle文件夹			
-		//char *DihAngleDataPath = new char[100];
-		//sprintf_s(DihAngleDataPath, 100, "data\\DihedralAngle\\body_%d.txt", i);
-		//fstream opDA(DihAngleDataPath, ios::out);
-		//
-		////存边长到data/EdgeLength文件夹	
-		//char *EdgeLengthDataPath = new char[100];
-		//sprintf_s(EdgeLengthDataPath, 100, "data\\EdgeLength\\body_%d.txt", i);
-		//fstream opEL(EdgeLengthDataPath, ios::out);
-
-		//char *DihEdgDataPath = new char[100];
-		//sprintf_s(DihEdgDataPath, 100, "data\\DihEdg\\body_%d.txt",i);
-		//fstream opDE(DihEdgDataPath, ios::out);
-
-		//int temp = 2 * (nE_);
-		//for (int j = 0/*,k=0*/; j<temp/*,k<nE_*/; j++/*,k++*/)
-		//{
-		//	opDA << calcu->DiEdgeDataMatrix(0,j) << endl;
-		//	DihAngel1[i][0.5*j] = calcu->DiEdgeDataMatrix(0,j);
-
-		//	/*1...DihEdg1(k,0)= calcu->DiEdgeDataMatrix(0, k*2);
-		//	DihEdg1(k,1) = calcu->DiEdgeDataMatrix(0, k*2+1);*/
-		//	/*2...DihEdg1 = calcu->DiEdgeDataMatrix.row(0).transpose();*/				
-
-		//	j++;
-		//	opEL << calcu->DiEdgeDataMatrix(0,j) << endl;
-		//	EdgeLen1[i][0.5*j - 0.5] = calcu->DiEdgeDataMatrix(0,j);
-
-		//}	
-		//opDA.close();
-		//opEL.close();
-		
+			k = k + 3;
+		}	
+		//分别存二面角和边长到data/DihEdg文件夹			
+		for (int j = 0; j<nE_; j++)
+		{
+			Dih1(j, i) = calcu->DiEdgeDataMatrix(0, 2 * j);
+			Edg1(j, i) = calcu->DiEdgeDataMatrix(0, 2 * j + 1);
+		}		
+		/*//存面积到data/FacesAreas文件夹	
+		calcu->calculateFacesAreas();
+		for (int j = 0; j < calcu->nF; j++)
+		{			
+			FaceAreas1(j,i) = calcu->FaceAreas[j][i];
+		}*/		
 
 		delete calcu;
 		delete pg;
 	}
-
+	opDE << DihEdg1 << endl;
+	opDE.close();
+	opPoints << Points1 << endl;
+	opPoints.close();
+	opD << Dih1 << endl;
+	opD.close();
+	opE << Edg1 << endl;
+	opE.close();
+	/*opFA << FaceAreas1;
+	opFA.close();*/
 }
 
 //把2*nE_维降到2维
-void dimReduction()
+tapkee::DenseMatrix dimReduction()
 {
 	const int ROW = 2*nE_;
 	const int COL = meshNum;
-	/*tapkee::DenseMatrix testMatrix(ROW, COL);
+	tapkee::DenseMatrix testMatrix(ROW, COL);
 
-	TapkeeOutput output = initialize()
-	.withParameters((method = KernelLocallyLinearEmbedding,
-	target_dimension = 2))
-	.embedUsing(matrix);
+	ifstream infile;//定义读取文件流，相对于程序来说是in
+	infile.open("data\\DihEdg\\body_DihEdg.txt");//打开文件								   
+	for (int i = 0; i < ROW; i++)
+	{
+		for (int j = 0; j < COL; j++)
+		{
+			infile >> testMatrix(i, j);
+		}
+	}
+	infile.close();
 
-	cout << output.embedding.transpose() << endl;*/
-
+	TapkeeOutput output = tapkee::initialize()
+		/*.withParameters((method = KernelLocallyLinearEmbedding,*/
+		/*.withParameters((method = KernelLocalTangentSpaceAlignment,*/
+		.withParameters((method = Isomap,
+			num_neighbors = 4,
+			target_dimension = 2))
+		.embedUsing(testMatrix);
+	return output.embedding.transpose();
 }
 
 void getReferData()//简化的样条无需此函数，非简化则需重写
@@ -145,15 +147,15 @@ void getReferData()//简化的样条无需此函数，非简化则需重写
 		{
 			for (int j = 0; j < nE_; j++)
 			{
-				EdgeLen2[p*(n_ + 1) + q][j] = EdgeLen1[p][j] + q*_n*(EdgeLen1[p + 1][j] - EdgeLen1[p][j]);
-				DihAngel2[p*(n_ + 1) + q][j] = DihAngel1[p][j] + q*_n*(DihAngel1[p + 1][j] - DihAngel1[p][j]);
+				EdgeLen2[p*(n_ + 1) + q][j] = Edg1(j,p) + q*_n*(Edg1(j,p + 1) - Edg1(p,j));
+				DihAngel2[p*(n_ + 1) + q][j] = Dih1(j, p) + q*_n*(Dih1(j, p + 1) - Dih1(p, j));
 			}
 		}	
 	}
 	for (int j = 0; j < nE_; j++)
 	{
-		EdgeLen2[(meshNum - 1)*(n_ + 1)][j] = EdgeLen1[meshNum - 1][j];
-		DihAngel2[(meshNum - 1)*(n_ + 1)][j] = DihAngel1[meshNum - 1][j];
+		EdgeLen2[(meshNum - 1)*(n_ + 1)][j] = Edg1(j, meshNum - 1);
+		DihAngel2[(meshNum - 1)*(n_ + 1)][j] = Dih1(j, meshNum - 1);
 	}
 
 	DiEdgeDataMatrix2 = Eigen::MatrixXd(K + 1, 2 * nE_);
@@ -271,8 +273,8 @@ void solveLinearEquations()//需要重写
 
 			for (int m = 0,q=i; m <2; m++,q++)
 			{
-				b_edge(m) = EdgeLen1[q][j];
-				b_dihAngel(m) = DihAngel1[q][j];				
+				b_edge(m) = Edg1(j, q);
+				b_dihAngel(m) = Dih1(j,q);
 			}
 			constK_edge = coefficientA.fullPivLu().solve(b_edge);
 			constK_dihAngel = coefficientA.fullPivLu().solve(b_dihAngel);
@@ -291,7 +293,7 @@ void solveLinearEquations()//需要重写
 			VectorXd b_faceAreas(2);
 			for (int m = 0, q = i; m <2; m++, q++)
 			{
-				b_faceAreas(m) = FaceAreas1[q][j];
+				b_faceAreas(m) = FaceAreas1(q,j);
 			}
 			constK_faceAreas = coefficientA.fullPivLu().solve(b_faceAreas);
 			//cout << "第" << j << "边的b_faceAreas向量为:" << endl << b_faceAreas << endl << endl << "常数K为:" << endl << constK_faceAreas << endl << endl;
@@ -432,7 +434,11 @@ void getAllData()
 int main()
 {
 	getNum_EFV();
-	getDihEdgeArea();	
+	getDihEdgeArea();
+	tapkee::DenseMatrix matrix_after_dimReduction = dimReduction();
+	cout << matrix_after_dimReduction << endl;
+	
+		
 	/*getlinSysMatrice(K + 1);*/
 
 	/*dimReduction();*/
@@ -441,8 +447,6 @@ int main()
 	getRecst();
 	getAllData();*/
 
-
-	//system("pause");
 	cout << "请输入任意字符..." << endl;
 	getchar();
 	return 0;

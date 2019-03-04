@@ -62,7 +62,7 @@ public:
 	int anchorEidx;//锚点的邻边的index
 	std::vector<std::vector<faceanchor>> faceAnchorFrames;//保存每帧面锚点的标架
 	std::vector<std::vector<vertexanchor>> vertexAnchorCords;//保存每帧点锚点的坐标
-	SimplicialCholesky<SparseMatrix<double>> presolver;
+	SimplicialCholesky<Eigen::SparseMatrix<double>> presolver;
 	Eigen::SparseMatrix<double> vertexCoff;
 
 	VertexHandle POINT0_HANDLE(EdgeHandle edgeHandle) { return mesh_->from_vertex_handle(mesh_->halfedge_handle(edgeHandle, 0)); }

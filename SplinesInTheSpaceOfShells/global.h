@@ -1,5 +1,6 @@
 #pragma once
 #include "functions.h"
+//#pragma comment(lib,"tapkee.lib")
 
 typedef OpenMesh::TriMesh_ArrayKernelT<> PGMesh;
 
@@ -7,11 +8,13 @@ typedef OpenMesh::TriMesh_ArrayKernelT<> PGMesh;
 int nE_ = 0;
 int nF_ = 0;
 int nV_ = 0;
-vector<vector<double>> EdgeLen1;//已知mesh的各帧各条边的边长
-vector<vector<double>> DihAngel1;//已知mesh的各帧各条边的二面角
-vector<vector<double>> FaceAreas1;//已知mesh的各帧各个面的面积
 
-Eigen::MatrixXd DihEdg1;//已知mesh的各帧各条边的二面角和边长
+
+Eigen::MatrixXd DihEdg1;//已知mesh的各条边各帧的二面角和边长
+Eigen::MatrixXd Dih1;//已知mesh的各条边各帧的二面角
+Eigen::MatrixXd Edg1;//已知mesh的各条边各帧的边长
+Eigen::MatrixXd FaceAreas1;//已知mesh的各帧各个面的面积
+Eigen::MatrixXd Points1;//已知mesh的各顶点各帧的三维坐标
 
 
 vector<vector<double>> EdgeLen2;//参考帧
