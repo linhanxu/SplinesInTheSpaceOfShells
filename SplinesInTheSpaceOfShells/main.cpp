@@ -8,7 +8,7 @@ using namespace tapkee;
 void getNum_EFV()
 {
 	char *meshpath = new char[100];
-	sprintf_s(meshpath, 100, "inMesh\\body_0.obj");
+	sprintf_s(meshpath, 100, "inMesh\\%s_0.obj",MODEL);
 	PGMesh *pg = new PGMesh();
 	OpenMesh::IO::read_mesh(*pg, meshpath);
 
@@ -32,28 +32,28 @@ void getDihEdgeArea()
 
 	//定义文件流，存二面角和边长到data/DihEdg文件夹	
 	char *DihEdgDataPath = new char[100];
-	sprintf_s(DihEdgDataPath, 100, "data\\DihEdg\\body_DihEdg.txt");
+	sprintf_s(DihEdgDataPath, 100, "data\\DihEdg\\%s_DihEdg.txt",MODEL);
 	fstream opDE(DihEdgDataPath, ios::out);
 	//定义文件流，存顶点三维坐标到data/Points文件夹	
 	char *PointsPath = new char[100];
-	sprintf_s(PointsPath, 100, "data\\Points\\body_Points.txt");
+	sprintf_s(PointsPath, 100, "data\\Points\\%s_Points.txt",MODEL);
 	fstream opPoints(PointsPath, ios::out);
 	//定义文件流，分别存二面角和边长到data/DihEdg文件夹	
 	char *DihDataPath = new char[100];
-	sprintf_s(DihDataPath, 100, "data\\DihEdg\\body_Dih.txt");
+	sprintf_s(DihDataPath, 100, "data\\DihEdg\\%s_Dih.txt", MODEL);
 	fstream opD(DihDataPath, ios::out);
 	char *EdgDataPath = new char[100];
-	sprintf_s(EdgDataPath, 100, "data\\DihEdg\\body_Edg.txt");
+	sprintf_s(EdgDataPath, 100, "data\\DihEdg\\%s_Edg.txt", MODEL);
 	fstream opE(EdgDataPath, ios::out);
 	/*//定义文件流，存面积到data/FacesAreas文件夹			
 	char *FaceAreasPath = new char[100];
-	sprintf_s(FaceAreasPath, 100, "data\\FaceAreas\\body_FaceAreas.txt");
+	sprintf_s(FaceAreasPath, 100, "data\\FaceAreas\\%s_FaceAreas.txt",MODEL);
 	fstream opFA(FaceAreasPath, ios::out);*/
 
 	for (int i = 0; i < meshNum; i++)
 	{
 		char *meshpath = new char[100];
-		sprintf_s(meshpath, 100, "inMesh\\body_%d.obj", i);
+		sprintf_s(meshpath, 100, "inMesh\\%s_%d.obj", MODEL, i);
 		PGMesh *pg = new PGMesh();
 		OpenMesh::IO::read_mesh(*pg, meshpath);
 
@@ -101,31 +101,45 @@ void getDihEdgeArea()
 	opFA.close();*/
 }
 
+struct MyDistanceCallback
+{
+	ScalarType distance(IndexType l, IndexType r)
+	{
+		return abs(l - r);
+	}
+};
 //把2*nE_维降到2维
-tapkee::DenseMatrix dimReduction()
+tapkee::DenseMatrix  dimReduction()
 {
 	const int ROW = 2*nE_;
+	//const int ROW = 3*nV_;
+	//const int ROW = nE_;
 	const int COL = meshNum;
-	tapkee::DenseMatrix testMatrix(ROW, COL);
+	tapkee::DenseMatrix matrix_before_dimReduction = tapkee::DenseMatrix::Zero(ROW, COL);
 
 	ifstream infile;//定义读取文件流，相对于程序来说是in
-	infile.open("data\\DihEdg\\body_DihEdg.txt");//打开文件								   
+	char *path = new char[100];
+	sprintf_s(path, 100, "data\\DihEdg\\%s_DihEdg.txt", MODEL);
+	//sprintf_s(path, 100, "data\\Points\\%s_Points.txt", MODEL);
+	//sprintf_s(path, 100, "data\\DihEdg\\%s_Dih.txt", MODEL);
+	//sprintf_s(path, 100, "data\\DihEdg\\%s_Edg.txt", MODEL);
+	infile.open(path);	
 	for (int i = 0; i < ROW; i++)
 	{
 		for (int j = 0; j < COL; j++)
 		{
-			infile >> testMatrix(i, j);
+			infile >> matrix_before_dimReduction(i, j);
 		}
 	}
 	infile.close();
 
-	TapkeeOutput output = tapkee::initialize()
-		/*.withParameters((method = KernelLocallyLinearEmbedding,*/
-		/*.withParameters((method = KernelLocalTangentSpaceAlignment,*/
+	TapkeeOutput output = tapkee::initialize::initialize()
+		//.withParameters((method = KernelLocallyLinearEmbedding,
+		//.withParameters((method = KernelLocalTangentSpaceAlignment,
 		.withParameters((method = Isomap,
 			num_neighbors = 4,
 			target_dimension = 2))
-		.embedUsing(testMatrix);
+		.embedUsing(matrix_before_dimReduction);
 	return output.embedding.transpose();
 }
 
@@ -173,11 +187,11 @@ void getReferData()//简化的样条无需此函数，非简化则需重写
 	{
 		//存参考二面角和边长分别到data/efer_DihedralAngle、data/refer_EdgeLength文件夹
 		char *DihAngleDataPath = new char[100];
-		sprintf_s(DihAngleDataPath, 100, "data\\refer_DihedralAngle\\refer_body_%d.txt", i);
+		sprintf_s(DihAngleDataPath, 100, "data\\refer_DihedralAngle\\refer_%s_%d.txt", MODEL,i);
 		fstream opDA(DihAngleDataPath, ios::out);
 
 		char *EdgeLengthDataPath = new char[100];
-		sprintf_s(EdgeLengthDataPath, 100, "data\\refer_EdgeLength\\refer_body_%d.txt", i);
+		sprintf_s(EdgeLengthDataPath, 100, "data\\refer_EdgeLength\\refer_%s_%d.txt", MODEL, i);
 		fstream opEL(EdgeLengthDataPath, ios::out);
 		
 		for (int j = 0; j<nE_; j++)
@@ -225,7 +239,8 @@ void getlinSysMatrice(int n1)
 	linSysMatrice.setFromTriplets(triple.begin(), triple.end());
 	triple.clear();
 }
-void solveLinearEquations()//需要重写
+
+void solveLinearEquations()//需重写
 {
 	vector<vector<double>> constZ;//存基础解系
 	constZ.resize(2);
@@ -316,35 +331,50 @@ void solveLinearEquations()//需要重写
 	
 }
 
-void getRecst()
+void getWeight() 
 {
-	cout << endl << "getRecst..." << endl;		
+	w0 = 0.50;
+	w1 = 0.50;
+	w2 = 0.00;
+	w3 = 0.00;
+	w4 = 0.00;
+
+	/*w0 = 0.00;
+	w1 = 0.00;
+	w2 = 0.00;
+	w3 = 1.00;
+	w4 = 0.00;*/
+}
+
+void getRecst_0()
+{
+	cout << endl << "getRecst..." << endl;
 	char *meshpath = new char[100];
 	char *outMesh_refer = new char[100];
 	char *outMesh_recst = new char[100];
 
-	for (int m=0;m<meshNum-1;m++) 
+	for (int m = 0; m<meshNum - 1; m++)
 	{
 		//读取keyPose并new对象		
-		sprintf_s(meshpath, 100, "inMesh\\body_%d.obj", m);
+		sprintf_s(meshpath, 100, "inMesh\\%s_%d.obj", MODEL, m);
 		PGMesh *pg = new PGMesh();
 		OpenMesh::IO::read_mesh(*pg, meshpath);
 		functions *calcu_key = new functions(pg, meshNum);
 
 		//重构keyPose
 		Eigen::VectorXd LK1(3 * nV_);
-		sprintf_s(outMesh_recst, 100, "outMesh\\recst_body_%d.obj", m * (n_+1));
+		sprintf_s(outMesh_recst, 100, "outMesh\\recst_%s_%d.obj", MODEL, m * (n_ + 1));
 		Eigen::VectorXd LK0 = DiEdgeDataMatrix_all.row(m * (n_ + 1));
 		calcu_key->presolve();
 		calcu_key->reconstructionFromDiEdges(LK0, LK1, 0, 0.5, 0);
-		calcu_key->outMesh(LK1, outMesh_recst);		
-		
+		calcu_key->outMesh(LK1, outMesh_recst);
+
 		for (int i = 1; i <= n_; i++)
 		{
 			//重构referPose
 			Eigen::VectorXd LR1(3 * nV_);
-			sprintf_s(outMesh_refer, 100, "outMeshRefer\\refer_body_%d.obj", m * (n_ + 1) + i);
-			Eigen::VectorXd LR0 = DiEdgeDataMatrix2.row(m * (n_ + 1) + i);			
+			sprintf_s(outMesh_refer, 100, "outMeshRefer\\refer_%s_%d.obj", MODEL, m * (n_ + 1) + i);
+			Eigen::VectorXd LR0 = DiEdgeDataMatrix2.row(m * (n_ + 1) + i);
 			calcu_key->reconstructionFromDiEdges(LR0, LR1, 0, 0.5, 0);
 			calcu_key->outMesh(LR1, outMesh_refer);
 
@@ -355,7 +385,7 @@ void getRecst()
 
 			//重构otherPose
 			Eigen::VectorXd L1(3 * nV_);
-			sprintf_s(outMesh_recst, 100, "outMesh\\recst_body_%d.obj", m * (n_ + 1) + i);
+			sprintf_s(outMesh_recst, 100, "outMesh\\recst_%s_%d.obj", MODEL, m * (n_ + 1) + i);
 			Eigen::VectorXd L0 = DiEdgeDataMatrix_all.row(m * (n_ + 1) + i);
 			calcu_refer->presolve();
 			calcu_refer->reconstructionFromDiEdges(L0, L1, 0, 0.5, 0);
@@ -369,14 +399,14 @@ void getRecst()
 		delete pg;
 	}
 	//读取最后一个keyPose并new对象		
-	sprintf_s(meshpath, 100, "inMesh\\body_%d.obj", (meshNum - 1));
+	sprintf_s(meshpath, 100, "inMesh\\%s_%d.obj", MODEL, (meshNum - 1));
 	PGMesh *pg = new PGMesh();
 	OpenMesh::IO::read_mesh(*pg, meshpath);
 	functions *calcu = new functions(pg, meshNum);
 
 	//重构最后一个keyPose
 	Eigen::VectorXd L1(3 * calcu->nV);
-	sprintf_s(outMesh_recst, 100, "outMesh\\recst_body_%d.obj", (meshNum-1) * (n_ + 1));
+	sprintf_s(outMesh_recst, 100, "outMesh\\recst_%s_%d.obj", MODEL, (meshNum - 1) * (n_ + 1));
 	Eigen::VectorXd L0 = DiEdgeDataMatrix_all.row((meshNum - 1) * (n_ + 1));
 	calcu->presolve();
 	calcu->reconstructionFromDiEdges(L0, L1, 0, 0.5, 0);
@@ -387,65 +417,61 @@ void getRecst()
 
 }
 
-void getAllData()
-{	
-	cout << "get all data from reconstruction..." << endl;
-	for (int i = 0; i < K+1; i++)
-	{
-		//存面积到data/recst_FaceAreas文件夹
-		char *FaceAreasPath = new char[100];
-		sprintf_s(FaceAreasPath, 100, "data\\recst_FaceAreas\\recst_body_%d.txt", i);
-		fstream opFA(FaceAreasPath, ios::out);
-		for (int j = 0; j <nF_; j++)
-		{
-			opFA << FaceAreas(i,j)<< endl;			
-		}
-		opFA.close();
+void getRecstFormPoint()
+{
+	//先计算线性混合的结果
+	getWeight();
+	DihEdg_blend = Eigen::MatrixXd::Zero(2 * nE_,1);
+	DihEdg_blend.col(0) = DihEdg1.col(0)*w0 + DihEdg1.col(1)*w1 + DihEdg1.col(2)*w2 + DihEdg1.col(3)*w3 + DihEdg1.col(4)*w4;
 
-		//存二面角和边长分别到data/recst_DihedralAngle、data/recst_EdgeLength文件夹
-		char *DihAngleDataPath = new char[100];
-		sprintf_s(DihAngleDataPath, 100, "data\\recst_DihedralAngle\\recst_body_%d.txt", i);
-		fstream opDA(DihAngleDataPath, ios::out);
+	//输出DihEdg_blend到DihEdg_blend.txt
+	char *DihEdg_blendPath = new char[100];
+	sprintf_s(DihEdg_blendPath, 100, "data\\DihEdg\\%s_DihEdg_blend.txt", MODEL);
+	fstream opDEB(DihEdg_blendPath, ios::out);
+	opDEB << DihEdg_blend << endl;
 
-		char *EdgeLengthDataPath = new char[100];
-		sprintf_s(EdgeLengthDataPath, 100, "data\\recst_EdgeLength\\recst_body_%d.txt", i);
-		fstream opEL(EdgeLengthDataPath, ios::out);
-
-		/*int temp = 2 * (nE_);
-		for (int j = 0; j<temp; j++)
-		{
-			opDA << DiEdgeDataMatrix_all(i,j) << endl;	
-			j++;
-			opEL << DiEdgeDataMatrix_all(i,j) << endl;			
-
-		}*/
-		for (int j = 0; j < nE_; j++)
-		{
-			opDA << DihAngel(i, j) << endl;
-			opEL << EdgeLen(i, j) << endl;
-		}
-		opDA.close();
-		opEL.close();
-	}	
+	//开始重构该点处的mesh
+	cout << endl << "getRecst..." << endl;		
+	char *meshpath = new char[100];
+	char *outMesh_recst = new char[100];
 	
+	//读取keyPose并new对象		
+	sprintf_s(meshpath, 100, "inMesh\\%s_0.obj", MODEL);
+	PGMesh *pg = new PGMesh();
+	OpenMesh::IO::read_mesh(*pg, meshpath);
+	functions *calcu_key = new functions(pg, meshNum);
+
+	//重构
+	Eigen::VectorXd LK1(3 * nV_);
+	sprintf_s(outMesh_recst, 100, "outMesh\\recst_%s_fromPoint.obj", MODEL);
+	Eigen::VectorXd LK0 = DihEdg_blend.col(0);
+	calcu_key->presolve();
+	calcu_key->reconstructionFromDiEdges(LK0, LK1, 0, 0.5, 0);
+	calcu_key->outMesh(LK1, outMesh_recst);
+
+	delete calcu_key;
+	delete pg;
 }
+
 
 
 int main()
 {
 	getNum_EFV();
 	getDihEdgeArea();
+
 	tapkee::DenseMatrix matrix_after_dimReduction = dimReduction();
 	cout << matrix_after_dimReduction << endl;
 	
-		
-	/*getlinSysMatrice(K + 1);*/
-
-	/*dimReduction();*/
+	
+	/*getlinSysMatrice(K + 1);*/	
 	/*solveLinearEquations();
+
 	getReferData();
-	getRecst();
-	getAllData();*/
+
+	getRecst();*/
+
+	getRecstFormPoint();
 
 	cout << "请输入任意字符..." << endl;
 	getchar();

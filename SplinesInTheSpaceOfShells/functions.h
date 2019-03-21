@@ -1,6 +1,12 @@
+#ifndef FUNCTIONS_H
+#define FUNCTIONS_H
+
+
+
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 #include <OpenMesh/Core/Mesh/Handles.hh>
+#define EIGEN_NO_DEBUG 
 #include <unsupported/Eigen/MatrixFunctions>
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
@@ -48,7 +54,7 @@ public:
 	int nF;//面的个数
 	int nE;//边的个数	
 	
-	Eigen::MatrixXd DiEdgeDataMatrix;//各个面各帧的二面角和边长
+	Eigen::MatrixXd DiEdgeDataMatrix;//各条边各帧的二面角和边长
 	vector<vector<double>> FaceAreas;//各个面各帧的面积
 	//vector<vector<double>> de;//de[边][帧]，de=(1/3)*(a1+a2)，以边e的为公共边的两个面面积之和的三分之一
 	vector<vector<Eigen::VectorXd>> SpatialTemData;//各个顶点各帧的坐标
@@ -102,3 +108,4 @@ public:
 	/** 先解presolver*/
 	void presolve();
 };
+#endif // FUNCTIONS_H

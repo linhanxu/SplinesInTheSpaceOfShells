@@ -1,4 +1,5 @@
-﻿#include "functions.h"
+﻿#pragma once
+#include "functions.h"
 
 /**初始化构造函数*/
 functions::functions(PGMesh *_mesh, int meshNum)
@@ -23,7 +24,7 @@ functions::functions(PGMesh *_mesh, int meshNum)
 		}
 	}
 
-	for (int i = 0; i < 3; i++)
+	for (int i = 4817; i < 4820; i++)//模型man右手位置基本不动，所以可以把锚点设置在那里，每个模型都不一样
 	{
 		setAnchor(i);
 	}
